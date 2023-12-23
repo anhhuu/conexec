@@ -1,4 +1,4 @@
-module github.com/anhhuu/concurrent-executor
+module github.com/anhhuu/conexec
 
 go 1.21.5
 

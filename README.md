@@ -1,10 +1,10 @@
 # Concurrent Executor for Asynchronous Task Execution
 
-Package name: `conexe`
+Package name: `anhhuu/conexec`
 
 ## Overview
 
-The `conexe` package provides a Concurrent Executor that facilitates the concurrent execution of multiple tasks, managing its own task queue. It is designed to handle asynchronous task execution with controlled concurrency and a task queue to ensure efficient resource utilization.
+The `conexec` package provides a Concurrent Executor that facilitates the concurrent execution of multiple tasks, managing its own task queue. It is designed to handle asynchronous task execution with controlled concurrency and a task queue to ensure efficient resource utilization.
 
 ## Features
 

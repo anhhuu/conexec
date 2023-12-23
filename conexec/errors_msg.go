@@ -1,4 +1,4 @@
-package conexe
+package conexec
 
 const (
 	ClosedPanicMsg = "ConcurrentExecutor is closed"

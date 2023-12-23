@@ -1,4 +1,4 @@
-package conexe
+package conexec
 
 import (
 	"context"
