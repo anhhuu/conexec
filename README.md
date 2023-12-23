@@ -19,39 +19,39 @@ The `conexec` package provides a Concurrent Executor that facilitates the concur
 package main
 
 import (
-	"context"
-	"fmt"
+    "context"
+    "fmt"
 
-	"github.com/anhhuu/conexec"
+    "github.com/anhhuu/conexec"
 )
 
 func main() {
-	// Initialize Concurrent Executor
-	executor := conexec.NewConcurrentExecutorBuilder().Build()
-	defer executor.Close()
+    // Initialize Concurrent Executor
+    executor := conexec.NewConcurrentExecutorBuilder().Build()
+    defer executor.Close()
 
-	// Enqueue tasks
-	task1 := conexec.Task{
-		ID: "1",
-		Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
-			arg0, ok := args[0].(string)
-			if !ok {
-				return "", fmt.Errorf("parse error")
-			}
-			return arg0, nil
-		},
-		ExecutorArgs: []interface{}{"arg0"},
-	}
+    // Enqueue tasks
+    task1 := conexec.Task{
+        ID: "1",
+        Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
+            arg0, ok := args[0].(string)
+            if !ok {
+                return "", fmt.Errorf("parse error")
+            }
+            return arg0, nil
+        },
+        ExecutorArgs: []interface{}{"arg0"},
+    }
 
-	executor.EnqueueTask(task1)
+    executor.EnqueueTask(task1)
 
-	// Start task execution
-	executor.StartExecution(context.Background())
+    // Start task execution
+    executor.StartExecution(context.Background())
 
-	// Wait for completion and get responses
-	responses := executor.WaitForCompletionAndGetResponse()
+    // Wait for completion and get responses
+    responses := executor.WaitForCompletionAndGetResponse()
 
-	// Do something with `responses`
+    // Do something with `responses`
 }
 ```
 
@@ -82,7 +82,7 @@ Initialize a new Concurrent Executor with the specified maximum concurrent tasks
 ### Enqueue Task
 
 ```go
-func (ce *ConcurrentExecutor) EnqueueTask(task Task) error
+func (concurrentExecutor *ConcurrentExecutor) EnqueueTask(task Task) error
 ```
 
 Enqueue a task for execution. If the task queue is full, an error is returned.
@@ -90,7 +90,7 @@ Enqueue a task for execution. If the task queue is full, an error is returned.
 ### Start Execution
 
 ```go
-func (ce *ConcurrentExecutor) StartExecution(ctx context.Context)
+func (concurrentExecutor *ConcurrentExecutor) StartExecution(ctx context.Context)
 ```
 
 Start the execution of tasks in a concurrent manner. It initiates goroutines to process tasks up to the specified maximum concurrency.
@@ -98,7 +98,7 @@ Start the execution of tasks in a concurrent manner. It initiates goroutines to 
 ### Wait for Completion and Get Responses
 
 ```go
-func (ce *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*TaskResponse
+func (concurrentExecutor *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*TaskResponse
 ```
 
 Wait for all tasks to complete and retrieve responses along with errors for each task.
@@ -106,10 +106,10 @@ Wait for all tasks to complete and retrieve responses along with errors for each
 ### Close
 
 ```go
-func (ce *ConcurrentExecutor) Close()
+func (concurrentExecutor *ConcurrentExecutor) Close()
 ```
 
-Close the task queue and response channels. This method should be called after `WaitForCompletionAndGetResponse` to ensure proper cleanup. Usage of defer `ce.Close()` is recommended.
+Close the task queue and response channels. This method should be called after `WaitForCompletionAndGetResponse` to ensure proper cleanup. Usage of defer `concurrentExecutor.Close()` is recommended.
 
 ## Important Notes
 
