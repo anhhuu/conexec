@@ -9,7 +9,27 @@ import (
 	"github.com/anhhuu/conexec"
 )
 
-func main1() {
+func simpFunc(taskID string) (string, error) {
+	fmt.Printf("Start task: %s\n", taskID)
+
+	startTime := time.Now()
+
+	// Simulating task execution
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	randNum := r1.Intn(50)
+	time.Sleep(time.Duration(randNum) * time.Millisecond)
+
+	var err error = nil
+	if randNum < 25 {
+		err = fmt.Errorf("dummy error %d, of task: %s", randNum, taskID)
+	}
+
+	fmt.Printf("Done task: %s, time elapsed: %s\n", taskID, time.Since(startTime))
+	return "Response from " + taskID, err
+}
+
+func main() {
 	maxTasks := 20
 	concurrentExecutor := conexec.NewConcurrentExecutorBuilder().
 		WithMaxTaskQueueSize(maxTasks).
@@ -27,20 +47,7 @@ func main1() {
 				if !ok {
 					return "", fmt.Errorf("parse error")
 				}
-				fmt.Printf("Start task: %s\n", taskID)
-				// Simulating task execution
-				startTime := time.Now()
-				s1 := rand.NewSource(time.Now().UnixNano())
-				r1 := rand.New(s1)
-				randNum := r1.Intn(50)
-				time.Sleep(time.Duration(randNum) * time.Millisecond)
-				fmt.Printf("Done task: %s, time elapsed: %s\n", taskID, time.Since(startTime))
-				var err error = nil
-				if randNum < 25 {
-					err = fmt.Errorf("dummy error %d, of task: %s", randNum, taskID)
-				}
-
-				return "Response from " + taskID, err
+				return simpFunc(taskID)
 			},
 			ExecutorArgs: []interface{}{taskID},
 		}
