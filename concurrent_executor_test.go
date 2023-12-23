@@ -14,7 +14,10 @@ func TestConcurrentExecutor(t *testing.T) {
 
 	t.Run("happy case with 1 time run", func(t *testing.T) {
 		// Create a ConcurrentExecutor
-		concurrentExecutor := NewConcurrentExecutor(10, 5)
+		concurrentExecutor := NewConcurrentExecutorBuilder().
+			WithMaxTaskQueueSize(10).
+			WithMaxConcurrentTasks(5).
+			Build()
 
 		// Adding tasks
 		for i := 1; i <= 5; i++ {
@@ -28,7 +31,7 @@ func TestConcurrentExecutor(t *testing.T) {
 					}
 
 					// Simulating task execution
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					return taskID, nil
 				},
 				ExecutorArgs: []interface{}{taskID},
@@ -66,7 +69,7 @@ func TestConcurrentExecutor(t *testing.T) {
 					}
 
 					// Simulating task execution
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					return taskID, nil
 				},
 				ExecutorArgs: []interface{}{taskID},
@@ -99,7 +102,7 @@ func TestConcurrentExecutor(t *testing.T) {
 					}
 
 					// Simulating task execution
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					return taskID, nil
 				},
 				ExecutorArgs: []interface{}{taskID},
@@ -143,7 +146,7 @@ func TestConcurrentExecutor(t *testing.T) {
 					}
 
 					// Simulating task execution
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					if index%2 == 0 {
 						return "", expectedError[taskID]
 					}
