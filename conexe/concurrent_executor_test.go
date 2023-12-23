@@ -16,7 +16,7 @@ func TestConcurrentExecutor(t *testing.T) {
 		// Create a ConcurrentExecutor
 		concurrentExecutor := NewConcurrentExecutor(10, 5)
 
-		// Adding tasks after the first Run is called
+		// Adding tasks
 		for i := 1; i <= 5; i++ {
 			taskID := fmt.Sprintf("Task_%d", i)
 			task := Task{
@@ -52,9 +52,9 @@ func TestConcurrentExecutor(t *testing.T) {
 	})
 
 	t.Run("happy case with 2 times run", func(t *testing.T) {
-		// Create a TaskRunner
+		// Create a ConcurrentExecutor
 		concurrentExecutor := NewConcurrentExecutor(3, 10)
-		// Adding tasks after the first Run is called
+		// Adding tasks
 		for i := 1; i <= 5; i++ {
 			taskID := fmt.Sprintf("Task_%d", i)
 			task := Task{
@@ -126,7 +126,7 @@ func TestConcurrentExecutor(t *testing.T) {
 		// Create a ConcurrentExecutor
 		concurrentExecutor := NewConcurrentExecutor(10, 5)
 		expectedError := make(map[string]error)
-		// Adding tasks after the first Run is called
+		// Adding tasks
 		for i := 1; i <= 5; i++ {
 			taskID := fmt.Sprintf("Task_%d", i)
 			expectedError[taskID] = fmt.Errorf("dummy error %d", i)
