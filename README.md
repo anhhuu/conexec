@@ -16,21 +16,43 @@ The `conexec` package provides a Concurrent Executor that facilitates the concur
 ## Example
 
 ``` go
-// Initialize Concurrent Executor
-executor := NewConcurrentExecutor(5, 10)
+package main
 
-// Enqueue tasks
-task1 := Task{ID: "1", Executor: myTaskExecutorFunc, ExecutorArgs: []interface{}{"arg1"}}
-executor.EnqueueTask(task1)
+import (
+	"context"
+	"fmt"
 
-// Start task execution
-executor.StartExecution(context.Background())
+	"github.com/anhhuu/conexec"
+)
 
-// Wait for completion and get responses
-responses := executor.WaitForCompletionAndGetResponse()
+func main() {
+	// Initialize Concurrent Executor
+	executor := conexec.NewConcurrentExecutorBuilder().Build()
+	defer executor.Close()
 
-// Close the executor
-executor.Close()
+	// Enqueue tasks
+	task1 := conexec.Task{
+		ID: "1",
+		Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
+			arg0, ok := args[0].(string)
+			if !ok {
+				return "", fmt.Errorf("parse error")
+			}
+			return arg0, nil
+		},
+		ExecutorArgs: []interface{}{"arg0"},
+	}
+
+	executor.EnqueueTask(task1)
+
+	// Start task execution
+	executor.StartExecution(context.Background())
+
+	// Wait for completion and get responses
+	responses := executor.WaitForCompletionAndGetResponse()
+
+	// Do something with `responses`
+}
 ```
 
 ## Usage

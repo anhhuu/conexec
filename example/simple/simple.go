@@ -9,14 +9,16 @@ import (
 	"github.com/anhhuu/conexec"
 )
 
-func main() {
+func main1() {
+	maxTasks := 20
 	concurrentExecutor := conexec.NewConcurrentExecutorBuilder().
-		WithMaxTaskQueueSize(15).
-		WithMaxConcurrentTasks(5).
+		WithMaxTaskQueueSize(maxTasks).
 		Build()
+	defer concurrentExecutor.Close()
 
 	// Adding tasks
-	for i := 1; i <= 15; i++ {
+	fmt.Printf("[INFO] START ENQUEUE:\n")
+	for i := 1; i <= maxTasks; i++ {
 		taskID := fmt.Sprintf("Task_%d", i)
 		task := conexec.Task{
 			ID: taskID,
@@ -30,13 +32,20 @@ func main() {
 				startTime := time.Now()
 				s1 := rand.NewSource(time.Now().UnixNano())
 				r1 := rand.New(s1)
-				time.Sleep(time.Duration(r1.Intn(50)) * time.Millisecond)
+				randNum := r1.Intn(50)
+				time.Sleep(time.Duration(randNum) * time.Millisecond)
 				fmt.Printf("Done task: %s, time elapsed: %s\n", taskID, time.Since(startTime))
-				return "Response from " + taskID, nil
+				var err error = nil
+				if randNum < 25 {
+					err = fmt.Errorf("dummy error %d, of task: %s", randNum, taskID)
+				}
+
+				return "Response from " + taskID, err
 			},
 			ExecutorArgs: []interface{}{taskID},
 		}
 
+		fmt.Printf("Add task: %s into queue\n", taskID)
 		err := concurrentExecutor.EnqueueTask(task)
 		if err != nil {
 			fmt.Printf("Add task got error: %v", err)
@@ -44,10 +53,11 @@ func main() {
 		}
 	}
 
+	fmt.Printf("\n[INFO] START EXECUTE:\n")
 	concurrentExecutor.StartExecution(context.Background())
 	resp := concurrentExecutor.WaitForCompletionAndGetResponse()
 
-	fmt.Println()
+	fmt.Printf("\n[INFO] SHOW RESPONSE:\n")
 	for taskID, res := range resp {
 		fmt.Printf("response of [%s], value is [%v], error is: [%v]\n", taskID, res.Value.(string), res.Error)
 	}
