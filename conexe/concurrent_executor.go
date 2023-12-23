@@ -57,27 +57,27 @@ type ConcurrentExecutor struct {
 	closed                 bool
 }
 
-func (tr *ConcurrentExecutor) runTask(ctx context.Context) {
-	defer tr.waitgroup.Done()
+func (ce *ConcurrentExecutor) runTask(ctx context.Context) {
+	defer ce.waitgroup.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			task, ok := <-tr.taskQueueChan
+			task, ok := <-ce.taskQueueChan
 			if !ok {
 				return
 			}
 			defer func() {
 				if r := recover(); r != nil {
-					tr.mutex.Lock()
-					tr.responseChan <- &TaskResponse{
+					ce.mutex.Lock()
+					ce.responseChan <- &TaskResponse{
 						TaskID: task.ID,
 						Value:  nil,
 						Error:  fmt.Errorf("got panic, recover: %v", r),
 					}
-					tr.mutex.Unlock()
+					ce.mutex.Unlock()
 				}
 			}()
 
@@ -89,13 +89,13 @@ func (tr *ConcurrentExecutor) runTask(ctx context.Context) {
 				resp, err = task.Executor(ctx)
 			}
 
-			tr.mutex.Lock()
-			tr.responseChan <- &TaskResponse{
+			ce.mutex.Lock()
+			ce.responseChan <- &TaskResponse{
 				TaskID: task.ID,
 				Value:  resp,
 				Error:  err,
 			}
-			tr.mutex.Unlock()
+			ce.mutex.Unlock()
 		}
 	}
 }
@@ -122,99 +122,99 @@ func NewConcurrentExecutor(maxConcurrentTasks, maxTaskQueueSize int) *Concurrent
 	}
 }
 
-func (tr *ConcurrentExecutor) EnqueueTask(task Task) error {
-	tr.mutex.Lock()
-	if tr.closed {
-		tr.mutex.Unlock()
+func (ce *ConcurrentExecutor) EnqueueTask(task Task) error {
+	ce.mutex.Lock()
+	if ce.closed {
+		ce.mutex.Unlock()
 		panic(ClosedPanicMsg)
 	}
 
-	if tr.isTaskQueueChanClosed {
+	if ce.isTaskQueueChanClosed {
 		// Waiting for lastest running is finished and create a new queue (unlock mutex before waiting)
-		tr.mutex.Unlock()
-		tr.waitgroup.Wait()
+		ce.mutex.Unlock()
+		ce.waitgroup.Wait()
 
-		tr.mutex.Lock()
-		tr.taskQueueChan = make(chan Task, tr.maxTaskQueueSize)
+		ce.mutex.Lock()
+		ce.taskQueueChan = make(chan Task, ce.maxTaskQueueSize)
 		// Init response channel
-		tr.responseChan = make(chan *TaskResponse, tr.maxTaskQueueSize)
-		tr.isTaskQueueChanClosed = false
+		ce.responseChan = make(chan *TaskResponse, ce.maxTaskQueueSize)
+		ce.isTaskQueueChanClosed = false
 	}
-	tr.mutex.Unlock()
+	ce.mutex.Unlock()
 
 	select {
-	case tr.taskQueueChan <- task:
+	case ce.taskQueueChan <- task:
 		return nil
 	default:
 		return fmt.Errorf(FullQueueErr)
 	}
 }
 
-func (tr *ConcurrentExecutor) StartExecution(ctx context.Context) {
-	tr.mutex.Lock()
-	if tr.closed {
-		tr.mutex.Unlock()
+func (ce *ConcurrentExecutor) StartExecution(ctx context.Context) {
+	ce.mutex.Lock()
+	if ce.closed {
+		ce.mutex.Unlock()
 		panic(ClosedPanicMsg)
 	}
 
 	// If it already run, return
-	if tr.isTaskQueueChanClosed {
-		tr.mutex.Unlock()
+	if ce.isTaskQueueChanClosed {
+		ce.mutex.Unlock()
 		return
 	}
-	tr.mutex.Unlock()
+	ce.mutex.Unlock()
 
 	// Reset internal state (Waiting for lastest running is finished before reset)
-	tr.waitgroup.Wait()
+	ce.waitgroup.Wait()
 
-	tr.mutex.Lock()
-	tr.waitgroup = sync.WaitGroup{}
-	tr.isTaskQueueChanClosed = false
-	tr.closeResponseChanOnce = sync.Once{}
-	tr.closeTaskQueueChanOnce = sync.Once{}
-	tr.mutex.Unlock()
+	ce.mutex.Lock()
+	ce.waitgroup = sync.WaitGroup{}
+	ce.isTaskQueueChanClosed = false
+	ce.closeResponseChanOnce = sync.Once{}
+	ce.closeTaskQueueChanOnce = sync.Once{}
+	ce.mutex.Unlock()
 
 	// Run task
-	for i := 0; i < tr.maxConcurrentTasks; i++ {
-		tr.waitgroup.Add(1)
-		go tr.runTask(ctx)
+	for i := 0; i < ce.maxConcurrentTasks; i++ {
+		ce.waitgroup.Add(1)
+		go ce.runTask(ctx)
 	}
 
 	// After run all tasks in goroutine, taskQueueChan channel should be closed to block publish new task into channel
 	// and avoid deadlock on goroutine (when consume all of tasks in queue)
-	tr.closeTaskQueueChanOnce.Do(func() {
-		tr.mutex.Lock()
-		tr.isTaskQueueChanClosed = true
-		tr.mutex.Unlock()
-		close(tr.taskQueueChan)
+	ce.closeTaskQueueChanOnce.Do(func() {
+		ce.mutex.Lock()
+		ce.isTaskQueueChanClosed = true
+		ce.mutex.Unlock()
+		close(ce.taskQueueChan)
 	})
 }
 
-func (tr *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*TaskResponse {
-	tr.mutex.Lock()
+func (ce *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*TaskResponse {
+	ce.mutex.Lock()
 	// Haven't ran yet
-	if !tr.isTaskQueueChanClosed {
-		tr.mutex.Unlock()
+	if !ce.isTaskQueueChanClosed {
+		ce.mutex.Unlock()
 		return make(map[string]*TaskResponse, 0)
 	}
 
-	if tr.closed {
-		tr.mutex.Unlock()
+	if ce.closed {
+		ce.mutex.Unlock()
 		panic(ClosedPanicMsg)
 	}
-	tr.mutex.Unlock()
+	ce.mutex.Unlock()
 
-	tr.waitgroup.Wait()
+	ce.waitgroup.Wait()
 
 	// After wait all running tasks in goroutine finished, responseChan channel should be closed to block publish new resp into channel
 	// and avoid deadlock on goroutine (when reading all of responses in channel)
-	tr.closeResponseChanOnce.Do(func() {
-		close(tr.responseChan)
+	ce.closeResponseChanOnce.Do(func() {
+		close(ce.responseChan)
 	})
 
 	resp := make(map[string]*TaskResponse, 0)
 	for {
-		r, ok := <-tr.responseChan
+		r, ok := <-ce.responseChan
 		if !ok {
 			break
 		}
@@ -226,18 +226,18 @@ func (tr *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*Task
 }
 
 // Close must be called after WaitForCompletionAndGetResponse, if not, will panic, suggest use: defer Close()
-func (tr *ConcurrentExecutor) Close() {
-	tr.closeTaskQueueChanOnce.Do(func() {
-		tr.mutex.Lock()
-		tr.isTaskQueueChanClosed = true
-		tr.mutex.Unlock()
-		close(tr.taskQueueChan)
+func (ce *ConcurrentExecutor) Close() {
+	ce.closeTaskQueueChanOnce.Do(func() {
+		ce.mutex.Lock()
+		ce.isTaskQueueChanClosed = true
+		ce.mutex.Unlock()
+		close(ce.taskQueueChan)
 	})
-	tr.closeResponseChanOnce.Do(func() {
-		close(tr.responseChan)
+	ce.closeResponseChanOnce.Do(func() {
+		close(ce.responseChan)
 	})
 
-	tr.mutex.Lock()
-	tr.closed = true
-	tr.mutex.Unlock()
+	ce.mutex.Lock()
+	ce.closed = true
+	ce.mutex.Unlock()
 }
