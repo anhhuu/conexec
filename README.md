@@ -1,6 +1,6 @@
 # conexec #
 
-[![Build](https://github.com/anhhuu/conexec/workflows/build/badge.svg?branch=main)](https://github.com/anhhuu/conexec/actions)
+[![build](https://github.com/anhhuu/conexec/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/anhhuu/conexec/actions/workflows/go.yml)
 [![Codecov](https://codecov.io/gh/anhhuu/conexec/branch/main/graph/badge.svg)](https://codecov.io/gh/anhhuu/conexec)
 [![GoReportCard](https://goreportcard.com/badge/github.com/anhhuu/conexec)](https://goreportcard.com/report/github.com/anhhuu/conexec)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/anhhuu/conexec/blob/main/LICENSE)
