@@ -282,14 +282,13 @@ func TestConcurrentExecutor_EnqueueTask(t *testing.T) {
 
 		concurrentExecutor := NewConcurrentExecutor(defaultMaxConcurrentTasks, defautMaxTaskQueueSize)
 		concurrentExecutor.Close()
-		concurrentExecutor.EnqueueTask(Task{
+		_ = concurrentExecutor.EnqueueTask(Task{
 			ID: "test",
 			Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
 				return "", nil
 			},
 			ExecutorArgs: nil,
 		})
-		concurrentExecutor.Close()
 	})
 
 	t.Run("Enqueue task into a full queue", func(t *testing.T) {
@@ -336,13 +335,14 @@ func TestConcurrentExecutor_StartExecution(t *testing.T) {
 		}()
 
 		concurrentExecutor := NewConcurrentExecutor(defaultMaxConcurrentTasks, defautMaxTaskQueueSize)
-		concurrentExecutor.EnqueueTask(Task{
+		err := concurrentExecutor.EnqueueTask(Task{
 			ID: "test",
 			Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
 				return "", nil
 			},
 			ExecutorArgs: nil,
 		})
+		test.Nil(err)
 		concurrentExecutor.Close()
 		concurrentExecutor.StartExecution(context.Background())
 	})
