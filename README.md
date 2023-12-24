@@ -1,17 +1,17 @@
-# Concurrent Executor for Asynchronous Task Execution
+# conexec #
 
-Package name: `anhhuu/conexec`
+[![Build](https://github.com/anhhuu/conexec/workflows/build/badge.svg?branch=main)](https://github.com/anhhuu/conexec/actions)
+[![Codecov](https://codecov.io/gh/anhhuu/conexec/branch/main/graph/badge.svg)](https://codecov.io/gh/anhhuu/conexec)
+[![GoReportCard](https://goreportcard.com/badge/github.com/anhhuu/conexec)](https://goreportcard.com/report/github.com/anhhuu/conexec)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/anhhuu/conexec/blob/main/LICENSE)
 
-## Overview
+Package `anhhuu/conexec` (**Concurrent Executor for Asynchronous Task Execution**) provides a Concurrent Executor that facilitates the concurrent execution of multiple tasks, managing its own task queue. It is designed to handle asynchronous task execution with controlled concurrency and a task queue to ensure efficient resource utilization.
 
-The `conexec` package provides a Concurrent Executor that facilitates the concurrent execution of multiple tasks, managing its own task queue. It is designed to handle asynchronous task execution with controlled concurrency and a task queue to ensure efficient resource utilization.
+## Installation
 
-## Features
-
-- **Task Execution:** Execute tasks concurrently while respecting the specified maximum concurrent task limit.
-- **Task Queue:** Manage a task queue to handle tasks that exceed the current concurrency limit.
-- **Error Handling:** Capture and report errors during task execution.
-- **Task Response:** Retrieve responses and errors for each completed task.
+```bash
+go get github.com/anhhuu/conexec
+```
 
 ## Example
 
@@ -55,7 +55,20 @@ func main() {
 }
 ```
 
+## Features
+
+- **Task Execution:** Execute tasks concurrently while respecting the specified maximum concurrent task limit.
+- **Task Queue:** Manage a task queue to handle tasks that exceed the current concurrency limit.
+- **Error Handling:** Capture and report errors/panics during task execution.
+- **Task Response:** Retrieve responses and errors for each completed task.
+
 ## Usage
+
+```go
+import (
+    "github.com/anhhuu/conexec"
+)
+```
 
 ### Task Structure
 
@@ -69,7 +82,7 @@ type Task struct {
 type TaskExecutor func(ctx context.Context, args ...interface{}) (interface{}, error)
 ```
 
-The `Task` struct represents a task with a unique identifier (`ID`), an executor function (`Executor`), and optional executor arguments (ExecutorArgs). The executor function takes a context and variable arguments and returns a value and an error.
+The `Task` struct represents a task with a unique identifier (`ID`), an executor function (`Executor`), and optional executor arguments (`ExecutorArgs`). The executor function takes a context and variable arguments and returns a value and an error.
 
 ### Concurrent Executor Initialization
 
@@ -78,6 +91,14 @@ func NewConcurrentExecutor(maxConcurrentTasks, maxTaskQueueSize int) *Concurrent
 ```
 
 Initialize a new Concurrent Executor with the specified maximum concurrent tasks and task queue size.
+Or simple to use builder:
+
+```go
+concurrentExecutor := conexec.NewConcurrentExecutorBuilder().
+    WithMaxTaskQueueSize(defautMaxTaskQueueSize).
+    WithMaxConcurrentTasks(defaultMaxConcurrentTasks).
+    Build()
+```
 
 ### Enqueue Task
 

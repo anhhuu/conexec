@@ -2,12 +2,13 @@ package conexec
 
 import (
 	"context"
-	"fmt"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 /*
-// If ExecutorArgs is valid, it will be passed into Executor.
+// If ExecutorArgs is valid, it will be passed into Executor func.
 
 	{
 		...
@@ -21,7 +22,7 @@ import (
 		task.Executor = func(ctx context.Context, args ...interface{}) (interface{}, error) {
 			arg0, ok := args[0].(type)
 			if !ok {
-				return "", fmt.Errorf("parse error")
+				return "", errors.Errorf("parse error")
 			}
 
 			// Do something with arg0
@@ -75,13 +76,16 @@ func (concurrentExecutor *ConcurrentExecutor) runTask(ctx context.Context) {
 			defer func() {
 				// Recover from panics and report errors to responseChan
 				if r := recover(); r != nil {
-					concurrentExecutor.mutex.Lock()
+					// Push error panic handling
 					concurrentExecutor.responseChan <- &TaskResponse{
 						TaskID: task.ID,
 						Value:  nil,
-						Error:  fmt.Errorf("got panic, recover: %v", r),
+						Error:  errors.Errorf("got panic, recover: %v", r),
 					}
-					concurrentExecutor.mutex.Unlock()
+
+					// This goroutine is destroyed because panic -> create new to replace it, support handle another task
+					concurrentExecutor.waitgroup.Add(1)
+					go concurrentExecutor.runTask(ctx)
 				}
 			}()
 
@@ -149,7 +153,7 @@ func (concurrentExecutor *ConcurrentExecutor) EnqueueTask(task Task) error {
 	case concurrentExecutor.taskQueueChan <- task:
 		return nil
 	default:
-		return fmt.Errorf(FullQueueErr)
+		return errors.Errorf(FullQueueErr)
 	}
 }
 
