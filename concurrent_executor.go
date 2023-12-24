@@ -270,7 +270,7 @@ func (concurrentExecutor *ConcurrentExecutor) WaitForCompletionAndGetResponse() 
 	return resp
 }
 
-// `Close` should be called after `WaitForCompletionAndGetResponse`/`Enqueue`/`StartExecution`. If not, a panic with `ClosedPanicMsg` is triggered.
+// `Close` should be called after `EnqueueTask`/`StartExecution`/`WaitForCompletionAndGetResponse`. If not, a panic with `ClosedPanicMsg` is triggered.
 // It is suggested to use `defer Close()` to ensure proper cleanup.
 func (concurrentExecutor *ConcurrentExecutor) Close() {
 	concurrentExecutor.closeTaskQueueChanOnce.Do(func() {

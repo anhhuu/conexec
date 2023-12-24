@@ -111,7 +111,7 @@ concurrentExecutor := conexec.NewConcurrentExecutorBuilder().
 func (concurrentExecutor *ConcurrentExecutor) EnqueueTask(task Task) error
 ```
 
-Enqueue a task for execution. If the task queue is full, an error is returned, got panic if executor is closed.
+Enqueue a task for execution. If the task queue is full, an error is returned. If the executor is closed before calling this method, a panic with `ClosedPanicMsg` is triggered.
 
 ### Start Execution ###
 
@@ -119,7 +119,20 @@ Enqueue a task for execution. If the task queue is full, an error is returned, g
 func (concurrentExecutor *ConcurrentExecutor) StartExecution(ctx context.Context)
 ```
 
-Start the execution of tasks in a concurrent manner, got panic if executor is closed. It initiates goroutines to process tasks up to the specified maximum concurrency.
+`StartExecution` initiates the concurrent execution of tasks. It takes a context as an argument to support cancellation of the task execution.
+
+```go
+{
+    ...
+    ctx, cancel := context.WithCancel(context.Background())
+    task.StartExecution(ctx)
+    time.Sleep(time.Duration(1) * time.Second)
+
+    cancel() // All executions will be canceled after this is called
+    ...
+}
+```
+If the executor is closed before calling this method, a panic with `ClosedPanicMsg` is triggered.
 
 ### Wait for Completion and Get Responses ###
 
@@ -127,7 +140,7 @@ Start the execution of tasks in a concurrent manner, got panic if executor is cl
 func (concurrentExecutor *ConcurrentExecutor) WaitForCompletionAndGetResponse() map[string]*TaskResponse
 ```
 
-Wait for all tasks to complete and retrieve responses along with errors for each task.
+`WaitForCompletionAndGetResponse` waits for the concurrent execution of tasks to complete and retrieves the responses for each task. It returns a map where the keys are task IDs, and the values are `TaskResponse` structures containing the results or errors of the tasks. If the executor is closed before calling this method, a panic with `ClosedPanicMsg` is triggered. If the executor has not been run yet, an empty map is returned. This method blocks until all tasks have completed their execution.
 
 ### Close ###
 
@@ -135,12 +148,7 @@ Wait for all tasks to complete and retrieve responses along with errors for each
 func (concurrentExecutor *ConcurrentExecutor) Close()
 ```
 
-Close the task queue and response channels. This method should be called after `WaitForCompletionAndGetResponse` to ensure proper cleanup. Usage of defer `concurrentExecutor.Close()` is recommended.
-
-## Important Notes ##
-
-- Ensure to call `Close` after using the executor to release resources properly.
-- Use defer `executor.Close()` to automatically close the executor after task execution.
+Close the task queue and response channels. This method should be called after `EnqueueTask`/`StartExecution`/`WaitForCompletionAndGetResponse` to ensure proper cleanup. Usage of defer `concurrentExecutor.Close()` is recommended.
 
 ## Limitation ##
 
