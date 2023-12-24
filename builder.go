@@ -1,13 +1,13 @@
 package conexec
 
-// ConcurrentExecutorBuilder is a builder for creating ConcurrentExecutor instances.
+// `ConcurrentExecutorBuilder` is a builder for creating ConcurrentExecutor instances.
 type ConcurrentExecutorBuilder struct {
 	maxTaskQueueSize   int
 	maxConcurrentTasks int
 }
 
 /*
-NewConcurrentExecutorBuilder creates a new instance of ConcurrentExecutorBuilder with default values.
+`NewConcurrentExecutorBuilder` creates a new instance of `ConcurrentExecutorBuilder` with default values.
 
 Default value:
   - MaxTaskQueueSize: 50
@@ -21,7 +21,7 @@ func NewConcurrentExecutorBuilder() *ConcurrentExecutorBuilder {
 }
 
 /*
-WithMaxTaskQueueSize sets the maximum task queue size.
+`WithMaxTaskQueueSize` sets the maximum task queue size.
 
 Default: 50
 */
@@ -31,7 +31,7 @@ func (builder *ConcurrentExecutorBuilder) WithMaxTaskQueueSize(size int) *Concur
 }
 
 /*
-WithMaxConcurrentTasks sets the maximum number of concurrent tasks.
+`WithMaxConcurrentTasks` sets the maximum number of concurrent tasks.
 
 Default: 5
 */

@@ -94,8 +94,8 @@ func TestConcurrentExecutor_SingleRun(t *testing.T) {
 		taskID := getTaskIDForTest(i)
 		task := Task{
 			ID:           taskID,
-			Executor:     executorForTest,
 			ExecutorArgs: []interface{}{taskID, false, nil},
+			Executor:     executorForTest,
 		}
 		err := concurrentExecutor.EnqueueTask(task)
 		test.Nil(err)
@@ -129,8 +129,8 @@ func TestConcurrentExecutor_MultipleRun(t *testing.T) {
 		taskID := getTaskIDForTest(i)
 		task := Task{
 			ID:           taskID,
-			Executor:     executorForTest,
 			ExecutorArgs: []interface{}{taskID, false, nil},
+			Executor:     executorForTest,
 		}
 		err := concurrentExecutor.EnqueueTask(task)
 		test.Nil(err)
@@ -153,8 +153,8 @@ func TestConcurrentExecutor_MultipleRun(t *testing.T) {
 		taskID := getTaskIDForTest(i)
 		task := Task{
 			ID:           taskID,
-			Executor:     executorForTest,
 			ExecutorArgs: []interface{}{taskID, false, nil},
+			Executor:     executorForTest,
 		}
 		err := concurrentExecutor.EnqueueTask(task)
 		test.Nil(err)
@@ -192,8 +192,8 @@ func TestConcurrentExecutor_ErrorHandling(t *testing.T) {
 		mapExpectedDummyError[taskID] = expectedDummyError
 		task := Task{
 			ID:           taskID,
-			Executor:     executorForTest,
 			ExecutorArgs: []interface{}{taskID, isReturnError, expectedDummyError},
+			Executor:     executorForTest,
 		}
 		err := concurrentExecutor.EnqueueTask(task)
 		test.Nil(err)
@@ -240,8 +240,8 @@ func TestConcurrentExecutor_PanicHandling(t *testing.T) {
 		}
 		task := Task{
 			ID:           taskID,
-			Executor:     executorForPanicTest,
 			ExecutorArgs: []interface{}{taskID, isPanic, expectedDummyPanicMsg},
+			Executor:     executorForPanicTest,
 		}
 		err := concurrentExecutor.EnqueueTask(task)
 		test.Nil(err)
@@ -283,11 +283,11 @@ func TestConcurrentExecutor_EnqueueTask(t *testing.T) {
 		concurrentExecutor := NewConcurrentExecutor(defaultMaxConcurrentTasks, defautMaxTaskQueueSize)
 		concurrentExecutor.Close()
 		_ = concurrentExecutor.EnqueueTask(Task{
-			ID: "test",
+			ID:           "test",
+			ExecutorArgs: nil,
 			Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
 				return "", nil
 			},
-			ExecutorArgs: nil,
 		})
 	})
 
@@ -310,11 +310,11 @@ func TestConcurrentExecutor_EnqueueTask(t *testing.T) {
 
 		// Enqueue a task into a full queue
 		err := concurrentExecutor.EnqueueTask(Task{
-			ID: "test-exceeded-queue-size",
+			ID:           "test-exceeded-queue-size",
+			ExecutorArgs: nil,
 			Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
 				return "", nil
 			},
-			ExecutorArgs: nil,
 		})
 
 		test.Equal(FullQueueErr, err.Error())
@@ -336,11 +336,11 @@ func TestConcurrentExecutor_StartExecution(t *testing.T) {
 
 		concurrentExecutor := NewConcurrentExecutor(defaultMaxConcurrentTasks, defautMaxTaskQueueSize)
 		err := concurrentExecutor.EnqueueTask(Task{
-			ID: "test",
+			ID:           "test",
+			ExecutorArgs: nil,
 			Executor: func(ctx context.Context, args ...interface{}) (interface{}, error) {
 				return "", nil
 			},
-			ExecutorArgs: nil,
 		})
 		test.Nil(err)
 		concurrentExecutor.Close()
